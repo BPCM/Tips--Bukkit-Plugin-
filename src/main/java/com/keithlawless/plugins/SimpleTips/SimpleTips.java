@@ -1,4 +1,4 @@
-/*
+package com.keithlawless.plugins.SimpleTips;/*
  * SimpleTips (http://github.com/keithlawless/Tips--Bukkit-Plugin-)
  * Copyright (C) 2011 Keith Lawless
  *
@@ -16,16 +16,13 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.keithlawless.plugins.SimpleTips;
-
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
+import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
-import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitScheduler;
-import org.bukkit.configuration.file.YamlConfiguration;
-import org.bukkit.configuration.ConfigurationSection;
 
 import java.io.File;
 import java.io.IOException;
@@ -37,7 +34,7 @@ public class SimpleTips extends JavaPlugin implements Runnable {
     private static int MSG_ORDER_RANDOM = 1;
 
     private static String version = "SimpleTips v1.1 by keithlawless";
-    Logger log = Logger.getLogger("Minecraft");
+    private Logger log = Logger.getLogger("Minecraft");
 
 
     // Delay is measured in server ticks, which is 1/20th of a second.
@@ -46,7 +43,7 @@ public class SimpleTips extends JavaPlugin implements Runnable {
     private boolean groupMsgEnabled = false;
     private List<String> msgs;
     private HashMap<String,List<String>> groupMsgs;
-    private HashMap<String,Integer> groupMsgsCount;
+    private HashMap<String,Integer> groupMsgsCount= new HashMap<String, Integer>();
     private int msgCount = 0;
     private int currentMsg = 0;
     private Random random = new Random();
@@ -71,7 +68,7 @@ public class SimpleTips extends JavaPlugin implements Runnable {
         }
     }
 
-    public void load() {
+    private void load() {
         // YAML configuration file.
         File mainDirectory = new File("plugins"+File.separator+"SimpleTips");
         file = new File(mainDirectory.getAbsolutePath()+File.separator+"config.yml");
@@ -80,7 +77,6 @@ public class SimpleTips extends JavaPlugin implements Runnable {
             try {
                 Vector<String> msgs = new Vector<String>();
                 msgs.add("Put your messages here!");
-
                 mainDirectory.mkdirs();
                 file.createNewFile();
                 config = new YamlConfiguration();
@@ -127,7 +123,7 @@ public class SimpleTips extends JavaPlugin implements Runnable {
                         for ( String groupName : keys) {
                             groupMsgs.put(groupName.toLowerCase(), section.getStringList(groupName));
                             int count = section.getStringList(groupName).size();
-                            groupMsgsCount.put(groupName.toLowerCase(), new Integer(count));
+                            groupMsgsCount.put(groupName.toLowerCase(), count);
                         }
                     }
                 }
@@ -159,7 +155,7 @@ public class SimpleTips extends JavaPlugin implements Runnable {
     }
 
     private void groupMessageDisplay() {
-        Player[] players = this.getServer().getOnlinePlayers();
+        Collection<? extends Player> players =  getServer().getOnlinePlayers();
         for( Player player : players ) {
             this.getServer().getLogger().warning("Showing messages to " + player.getName());
             Set<String> groups = groupMsgs.keySet();
@@ -323,9 +319,9 @@ public class SimpleTips extends JavaPlugin implements Runnable {
     private String escape_colors(String input) {
         char[] color_codes = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F' };
 
-        String output = new String(input);
-        for( int x = 0; x < color_codes.length; x++ ) {
-            output = output.replace( "%"+color_codes[x], "\u00A7"+color_codes[x]);
+        String output = input;
+        for (char color_code : color_codes) {
+            output = output.replace("%" + color_code, "\u00A7" + color_code);
         }
 
         return output;
